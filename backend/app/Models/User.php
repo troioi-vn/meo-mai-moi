@@ -91,6 +91,14 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
     ];
 
     /**
+     * @return HasMany<McpAgentClient, $this>
+     */
+    public function mcpAgentClients(): HasMany
+    {
+        return $this->hasMany(McpAgentClient::class);
+    }
+
+    /**
      * @return HasMany<HelperProfile, $this>
      */
     public function helperProfiles(): HasMany

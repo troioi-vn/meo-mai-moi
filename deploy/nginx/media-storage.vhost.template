@@ -1,0 +1,56 @@
+# Public media host: read-only proxy to one bucket on the S3 web endpoint.
+# Rendered once by utils/nginx-media-vhost.sh; slot switches never touch it.
+# Uploads are untrusted content, so they live on their own origin (the app's
+# host-only cookies and storage are out of reach) and carry a sandboxing CSP.
+server {
+    listen 80;
+    listen [::]:80;
+    server_name __MEDIA_WEB_HOST__;
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    http2 on;
+    server_name __MEDIA_WEB_HOST__;
+
+    ssl_certificate /etc/letsencrypt/live/__MEDIA_WEB_HOST__/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/__MEDIA_WEB_HOST__/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    access_log off;
+    error_log /var/log/nginx/__MEDIA_WEB_HOST___error.log error;
+
+    location / {
+        limit_except GET {
+            deny all;
+        }
+        proxy_pass __MEDIA_WEB_UPSTREAM__;
+        proxy_set_header Host __MEDIA_WEB_BUCKET__;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+        proxy_hide_header x-amz-request-id;
+        proxy_hide_header x-amz-id-2;
+
+        # Not "always": a 404 must not be cached for a month, or an image
+        # requested a moment before its upload finished stays broken.
+        add_header Cache-Control "public, max-age=2592000";
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'; sandbox" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    }
+}

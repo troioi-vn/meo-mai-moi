@@ -89,7 +89,8 @@ render_nginx_config() {
     sed \
         -e "s/__BACKEND_PORT__/${backend_port}/g" \
         -e "s/__REVERB_PORT__/${reverb_port}/g" \
-        "$NGINX_TEMPLATE"
+        "$NGINX_TEMPLATE" \
+        | "$SCRIPT_DIR/nginx-media-location.sh" "$ROOT_ENV_FILE" "$backend_port"
 }
 
 activate_slot() {

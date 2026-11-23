@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @property Pet $record
@@ -132,6 +133,9 @@ class ViewPet extends ViewRecord
                 ->icon('heroicon-o-camera')
                 ->form([
                     FileUpload::make('photo')
+                        // A temp file on the local disk, handed to the media library below,
+                        // which stores it on the media disk (S3 or local).
+                        ->disk('local')
                         ->label('Photo')
                         ->image()
                         ->imageEditor()
@@ -144,7 +148,7 @@ class ViewPet extends ViewRecord
                     $pet = $this->record;
 
                     // Get the uploaded file path
-                    $filePath = storage_path('app/public/'.$data['photo']);
+                    $filePath = Storage::disk('local')->path($data['photo']);
 
                     // Add new photo from uploaded file
                     if (file_exists($filePath)) {

@@ -12,6 +12,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Storage;
 
 class EditUser extends EditRecord
 {
@@ -49,6 +50,9 @@ class EditUser extends EditRecord
             ->icon('heroicon-o-camera')
             ->form([
                 FileUpload::make('avatar')
+                    // A temp file on the local disk, handed to the media library below,
+                    // which stores it on the media disk (S3 or local).
+                    ->disk('local')
                     ->label('Avatar')
                     ->image()
                     ->imageEditor()
@@ -68,7 +72,7 @@ class EditUser extends EditRecord
                 $uploadedFile = $data['avatar'];
                 if ($uploadedFile) {
                     // Get the full path to the uploaded file
-                    $filePath = storage_path('app/public/'.$uploadedFile);
+                    $filePath = Storage::disk('local')->path($uploadedFile);
 
                     if (file_exists($filePath)) {
                         // Add the file to MediaLibrary

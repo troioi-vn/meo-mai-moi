@@ -1,0 +1,45 @@
+    # User uploads from the S3 web endpoint (MEDIA_WEB_UPSTREAM and
+    # MEDIA_WEB_BUCKET in the root .env, rendered by utils/nginx-media-location.sh).
+    # The FALLBACK blocks are kept only with MEDIA_WEB_FALLBACK=1: a key the
+    # bucket lacks is then served from the app container's old uploads volume.
+    # Migration aid only. Deleting a file removes it from the bucket alone, so
+    # with the fallback on, a deleted pre-migration file stays public.
+    # Headers mirror backend/nginx-docker.conf: uploads are untrusted content
+    # served from the app origin, hence the sandboxing CSP.
+    location ^~ /storage/ {
+        limit_except GET {
+            deny all;
+        }
+        proxy_pass __MEDIA_WEB_UPSTREAM__/;
+        proxy_set_header Host __MEDIA_WEB_BUCKET__;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+        # __FALLBACK_BEGIN__
+        proxy_intercept_errors on;
+        error_page 404 = @storage_fallback;
+        # __FALLBACK_END__
+        proxy_hide_header x-amz-request-id;
+        proxy_hide_header x-amz-id-2;
+
+        access_log off;
+        # One Cache-Control (`expires` would add a second), and not on 404s.
+        add_header Cache-Control "public, max-age=2592000";
+        add_header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; style-src 'unsafe-inline'; sandbox" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+    }
+
+    # __FALLBACK_BEGIN__
+    location @storage_fallback {
+        proxy_pass http://127.0.0.1:__BACKEND_PORT__;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    # __FALLBACK_END__
+

@@ -479,6 +479,87 @@ They appear because the actual build happens inside Docker rather than relying o
 - Logs older than 30 days are cleaned up automatically.
 - Volume deletion events are logged to `.deploy/volume-deletions.log` for audit trail.
 
+## Media storage on S3
+
+Uploads live on two Laravel disks: `public` (media library images, chat
+images) and `private` (finance receipts). By default both are local
+directories, `public` on the `uploads_data` volume. With
+`MEDIA_STORAGE_DRIVER=s3` in `backend/.env` the same two disk names point at two
+buckets instead. Nothing else changes:
+
+- the `media.disk` column keeps saying `public`, so existing rows need no data
+  migration, only a copy of the files
+- public URLs keep the shape `APP_URL/storage/<path>`; set `MEDIA_PUBLIC_URL`
+  to override
+- the `private` bucket is never exposed; receipts stream through the API
+- the e2e stack (`backend_e2e`) is pinned to the local disk, so the suite's wipe
+  cannot touch the demo's bucket
+
+Serving `/storage` then becomes the edge proxy's job. Set `MEDIA_WEB_UPSTREAM`
+(the S3 web endpoint, e.g. Garage's port 3902) and `MEDIA_WEB_BUCKET` in the
+root `.env`, and the next slot switch renders a `/storage/` location into the
+host vhost (`deploy/nginx/media-storage.location.template`). A key the bucket
+does not have is a `404`.
+
+### Own media host
+
+Better: give uploads their own host, e.g. `storage.example.com`. Uploads are
+untrusted content; on a separate origin they cannot reach the app's host-only
+cookies or browser storage, and the vhost never changes on slot switches.
+
+1. DNS for the host, pointing at the edge server
+2. a certificate:
+   `sudo certbot certonly --webroot -w /var/www/certbot -d storage.example.com`
+   (needs a port-80 server block for the host that serves
+   `/.well-known/acme-challenge/` from `/var/www/certbot` until the vhost exists)
+3. `MEDIA_WEB_HOST=storage.example.com` in the root `.env`, next to
+   `MEDIA_WEB_UPSTREAM` and `MEDIA_WEB_BUCKET`, then render the vhost:
+   `utils/nginx-media-vhost.sh .env | sudo tee /etc/nginx/conf.d/storage.example.com.conf`,
+   `sudo nginx -t && sudo systemctl reload nginx`. Re-run only when
+   `deploy/nginx/media-storage.vhost.template` changes.
+4. `MEDIA_PUBLIC_URL=https://storage.example.com` in `backend/.env` and deploy.
+   From that slot switch on, `/storage/<path>` on the app host is a `301` to
+   `https://storage.example.com/<path>`, so links already handed out keep working
+
+The frontend's service worker caches media from `/storage/` and from any host
+whose name starts with `storage.`.
+
+### Fallback
+
+`MEDIA_WEB_FALLBACK=1` in the root `.env` sends those `404`s to the app
+container instead, which still serves the old volume. It is a migration aid
+only, and off by default for a reason: deleting a file after the switch removes
+it from the bucket, not from the volume, so with the fallback on a deleted
+photo stays public at its old URL. Turn it off again once the files are moved;
+the change takes effect at the next slot switch. It cannot be combined with
+`MEDIA_WEB_HOST`.
+
+### Moving files
+
+Moving an existing deployment:
+
+1. create the two buckets and a key with read/write on both; enable website
+   access (public read) on the media bucket only
+2. note the time, then copy the volume into the media bucket, preserving paths,
+   e.g. `rclone copy /var/lib/docker/volumes/<project>_uploads_data/_data :s3:<bucket>`
+3. set the `backend/.env` and root `.env` values above and deploy
+4. right away, copy again, but only files newer than step 2 (`rclone copy -v
+   --max-age 2h ...`, sized to cover since step 2): uploads made before the
+   switch. Until it finishes, those last uploads are `404`.
+5. verify a few `/storage/...` URLs return `200` from the bucket
+
+The age filter in step 4 narrows the gap but does not close it. An
+unrestricted second copy would bring back every file deleted from the bucket
+since the switch. The filtered one can still bring back a photo uploaded after
+step 2 and deleted before step 4, because its volume copy is recent. Only
+stopping uploads and deletions from step 2 through step 4 closes the gap. Without
+that, check what step 4 copied (`-v` lists it): a media library path starts
+with the media id, and each id must still exist in the `media` table. Delete
+any file whose row is gone from the bucket.
+
+To go back, unset `MEDIA_STORAGE_DRIVER` and the `MEDIA_WEB_*` values and
+deploy; anything uploaded in the meantime has to be copied back to the volume.
+
 ## Volume safety and debugging
 
 ### Database volume protection

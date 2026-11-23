@@ -79,6 +79,12 @@ class McpConnectorService
         ];
     }
 
+    /** @return list<string> */
+    public function supportedScopes(): array
+    {
+        return array_keys(self::SCOPE_ABILITIES);
+    }
+
     /**
      * @param  array<int, string>  $scopes
      * @return list<string>

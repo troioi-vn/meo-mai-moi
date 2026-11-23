@@ -195,7 +195,7 @@
       "description": "Cho phép một tác nhân AI làm việc với thú cưng, hồ sơ và tài chính của bạn qua Model Context Protocol. Quyền truy cập được cấp bằng OAuth, giới hạn trong các phạm vi bạn chấp thuận, và bạn có thể thu hồi bất cứ lúc nào.",
       "endpointLabel": "Địa chỉ máy chủ",
       "copyEndpoint": "Sao chép địa chỉ máy chủ",
-      "noTokenNeeded": "Không cần API token. Ứng dụng khách sẽ mở trang đăng nhập Meo Mai Moi và bạn chấp thuận các phạm vi mà nó yêu cầu.",
+      "noTokenNeeded": "Không cần API token. Ứng dụng sẽ mở trang đăng nhập Meo Mai Moi để bạn duyệt các quyền được yêu cầu. Với agent chạy không cần trình duyệt, hãy tạo agent client bên dưới.",
       "stepsTitle": "Kết nối một ứng dụng khách",
       "steps": [
         "Trong ứng dụng MCP của bạn, thêm một máy chủ Streamable HTTP từ xa với địa chỉ ở trên.",
@@ -210,6 +210,54 @@
       "copyError": "Không sao chép được. Hãy chọn văn bản và sao chép thủ công.",
       "docsLink": "Hướng dẫn kết nối ứng dụng khách",
       "skillLink": "Kỹ năng tác nhân cho Meo MCP"
+    },
+    "agentClients": {
+      "title": "Agent client",
+      "description": "Thông tin xác thực cho các MCP agent chạy không cần trình duyệt, ví dụ trên máy chủ hoặc theo lịch. Agent đổi client ID và secret lấy quyền truy cập trong một giờ, chỉ trong phạm vi các quyền bạn chọn ở đây.",
+      "createAction": "Tạo agent client",
+      "empty": "Chưa có agent client nào.",
+      "revokeAction": "Thu hồi",
+      "never": "Chưa bao giờ",
+      "noExpiry": "Không hết hạn",
+      "fields": {
+        "name": "Tên",
+        "scopes": "Quyền",
+        "expires": "Hết hạn",
+        "lastUsed": "Dùng lần cuối"
+      },
+      "expiry": {
+        "never": "Không hết hạn",
+        "30": "Sau 30 ngày",
+        "90": "Sau 90 ngày",
+        "365": "Sau 1 năm"
+      },
+      "presets": {
+        "everyday": "Chăm sóc hằng ngày",
+        "full": "Tất cả"
+      },
+      "broadWarning": "Các quyền này vượt ngoài chăm sóc hằng ngày. Chúng cho phép đọc và thay đổi dữ liệu nhạy cảm như tin nhắn, tài chính, chia sẻ và tìm nhà. Chỉ cấp cho agent mà bạn tin tưởng.",
+      "createDialog": {
+        "title": "Agent client mới",
+        "description": "Đặt tên theo agent hoặc máy chạy nó, để sau này biết cần thu hồi cái nào."
+      },
+      "createdDialog": {
+        "title": "Lưu secret ngay",
+        "description": "Secret chỉ hiển thị một lần. Hãy lưu nó cùng agent, ví dụ trong trình quản lý mật khẩu. Nếu bị mất, hãy thu hồi client này và tạo client mới.",
+        "clientId": "Client ID",
+        "clientSecret": "Client secret",
+        "copy_clientId": "Sao chép client ID",
+        "copy_clientSecret": "Sao chép client secret",
+        "confirmSaved": "Tôi đã lưu"
+      },
+      "revokeDialog": {
+        "title": "Thu hồi agent client?",
+        "description": "{{name}} sẽ mất quyền truy cập ngay. Agent dùng secret này sẽ ngừng hoạt động."
+      },
+      "messages": {
+        "createError": "Không thể tạo agent client",
+        "revokeSuccess": "Đã thu hồi agent client",
+        "revokeError": "Không thể thu hồi agent client"
+      }
     },
     "tokens": {
       "title": "Token API",

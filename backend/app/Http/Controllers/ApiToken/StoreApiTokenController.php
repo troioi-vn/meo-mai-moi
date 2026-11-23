@@ -51,6 +51,8 @@ class StoreApiTokenController extends Controller
                 'required',
                 'string',
                 'max:255',
+                // Reserved for tokens minted for MCP agent clients.
+                'not_regex:/^mcp-agent:/i',
                 Rule::unique(PersonalAccessToken::class, 'name')
                     ->where('tokenable_type', $request->user()::class)
                     ->where('tokenable_id', $request->user()->id),

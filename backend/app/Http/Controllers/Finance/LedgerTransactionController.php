@@ -15,9 +15,10 @@ use App\Traits\ApiResponseTrait;
 use App\Traits\HandlesOfflineVersionChecks;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\PersonalAccessToken;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LedgerTransactionController extends Controller
 {
@@ -142,7 +143,7 @@ class LedgerTransactionController extends Controller
         return $this->sendNoContent();
     }
 
-    public function receipt(Request $request, Ledger $ledger, LedgerTransaction $transaction): BinaryFileResponse|JsonResponse
+    public function receipt(Request $request, Ledger $ledger, LedgerTransaction $transaction): StreamedResponse|JsonResponse
     {
         if ($transaction->ledger_id !== $ledger->id || ! $this->user($request)->can('view', $ledger)) {
             return $this->sendError(__('messages.forbidden'), 403);
@@ -152,7 +153,9 @@ class LedgerTransactionController extends Controller
             return $this->sendError(__('finance.errors.not_found'), 404);
         }
 
-        return response()->download($media->getPath(), $media->file_name, ['Content-Type' => $media->mime_type]);
+        // Stream through the disk rather than from a local path: the private
+        // disk is an S3 bucket when MEDIA_STORAGE_DRIVER=s3.
+        return Storage::disk($media->disk)->download($media->getPathRelativeToRoot(), $media->file_name, ['Content-Type' => $media->mime_type]);
     }
 
     /** @return array<string, mixed> */

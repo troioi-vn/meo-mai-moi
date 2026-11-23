@@ -325,6 +325,27 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (November 2026, late)
+
+In-range refresh only:
+
+- Frontend: TanStack Query `5.108`, altcha `3.7`, Lucide `1.77`, Recharts `3.11`, React Router, ESLint plugins, and related patch/minor updates
+- Backend: Laravel `13.42.0` -> `13.43.0`, Fortify `1.43`, Sanctum `4.5`, Reverb `1.14`, PHPUnit `13.4.8`, swagger-php `7.7.0` -> `7.8.0` with L5-Swagger `11.4.1`, and related lockfile updates. The generated spec came out identical. `laravel/passkeys` `0.2` -> `0.3` arrives through Fortify; the app does not use it directly
+- Left for dedicated work: Vite+ `1.7` (with Vitest `5.1.1`), i18next `27` with react-i18next `18`, `@testing-library/jest-dom` `8`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `unpdf` `2`, `glob` `14`, `dotenv` `18`, and `laravel-notification-channels/telegram` `8`
+
+### Routine Composer and frontend refresh (November 2026, mid-month)
+
+In-range refresh, plus the Playwright CI image:
+
+- Frontend: Axios, altcha, Lucide, React Hook Form, `react-resizable-panels`, Orval, ESLint plugins, and related patch/minor updates
+- Playwright: `@playwright/test` `1.65.0` -> `1.65.1`, with the `.woodpecker/test.yml` image tag moved to match
+- Backend: Laravel `13.40.0` -> `13.42.0`, Filament `5.11.1` -> `5.11.4`, Larastan `3.14.0` -> `3.15.0`, PHPUnit `13.4.6` -> `13.4.7`, swagger-php `7.3.0` -> `7.7.0`, and related lockfile updates. The generated spec came out identical
+- Left for dedicated work: Vite+ `1.6`, i18next `27` with react-i18next `18`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `unpdf` `2`, `glob` `14`, `dotenv` `18`, and `laravel-notification-channels/telegram` `8`. `bun audit` still reports the `glob` and `minimatch` advisories those majors would clear
+
+Local lessons:
+
+- Filament `5.11.4` runs the model policy before a resource's `canView()` override, so the override can only narrow it. The admin panel's Group, Habit, Ledger, Litter and Pet view pages returned `403` for admins, because those policies are membership-based and `AuthServiceProvider` gives admins no shortcut. The resources now override `getViewAuthorizationResponse()` through `App\Filament\Concerns\AuthorizesRecordViewByAdminRole`. Other `can*()` overrides still replace the policy in this release; check that again on the next Filament bump.
+
 ### Vite+ 1.x (November 2026)
 
 `vite-plus` and `@voidzero-dev/vite-plus-core` `0.3.2` -> `1.5.0` at the root and in `frontend/`, with `vp migrate` from the 1.5.0 release. That moves bundled `vite` to `8.3.5`, `oxlint` to `1.91.0` and `oxfmt` to `0.76.0`. Vitest stays on `5.1.0`, the version 1.5.0 bundles. 1.4.0 was the older, safer pick, but it bundles Vitest `5.0.5`.

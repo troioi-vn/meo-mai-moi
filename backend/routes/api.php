@@ -183,6 +183,7 @@ use App\Http\Controllers\ResourceInvitation\ShowResourceInvitationController;
 use App\Http\Controllers\ResourceInvitation\StorePetResourceInvitationController;
 use App\Http\Controllers\Settings\GetInviteOnlyStatusController;
 use App\Http\Controllers\Settings\GetPublicSettingsController;
+use App\Http\Controllers\ShowHealthController;
 use App\Http\Controllers\Telegram\CreateTelegramLoginHandoffController;
 use App\Http\Controllers\Telegram\DisconnectTelegramController;
 use App\Http\Controllers\Telegram\GenerateTelegramLinkTokenController;
@@ -221,6 +222,7 @@ use App\Http\Controllers\WeightHistory\ListWeightHistoryController;
 use App\Http\Controllers\WeightHistory\ShowWeightController;
 use App\Http\Controllers\WeightHistory\StoreWeightController;
 use App\Http\Controllers\WeightHistory\UpdateWeightController;
+use App\Http\Middleware\ThrottleHealthCheck;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
@@ -235,6 +237,8 @@ $minuteThrottle = static fn (int $productionLimit): string => sprintf(
 );
 
 Route::get('/version', [VersionController::class, 'show']);
+// Throttled on the file store: the default limiter needs the database this checks.
+Route::get('/health', ShowHealthController::class)->middleware(ThrottleHealthCheck::class.':60,1');
 
 // Locale routes
 Route::get('/locale', [LocaleController::class, 'show']);

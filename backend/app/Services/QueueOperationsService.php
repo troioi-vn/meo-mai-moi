@@ -64,6 +64,23 @@ class QueueOperationsService
             ->count();
     }
 
+    /**
+     * Seconds the oldest job that is due and not yet picked up has been
+     * waiting, or null when there is none. Delayed jobs are not due yet and
+     * jobs a worker has reserved are in progress, so neither counts.
+     */
+    public function oldestWaitingJobAgeSeconds(): ?int
+    {
+        $now = now()->timestamp;
+        $oldest = DB::connection($this->databaseConnection())
+            ->table($this->queueTable())
+            ->whereNull('reserved_at')
+            ->where('available_at', '<=', $now)
+            ->min('available_at');
+
+        return $oldest === null ? null : max(0, $now - (int) $oldest);
+    }
+
     public function failedCount(): int
     {
         return DB::connection($this->failedDatabaseConnection())

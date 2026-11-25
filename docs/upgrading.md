@@ -325,6 +325,14 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine Composer and frontend refresh (November 2026, end of month)
+
+In-range refresh only:
+
+- Frontend: TanStack Query `5.108.4`, Lucide `1.80`, Recharts `3.11.1`, React Router `7.18.7`, Orval `8.49`, `typescript-eslint` `8.74`, `rollup-plugin-visualizer` `7.3`, and related patch/minor updates
+- Backend: Laravel `13.43.0` -> `13.44.1`, Filament `5.11.4` -> `5.12.0`, Fortify `1.44`, ParaTest `7.30`, Symfony `8.1.12`, swagger-php `7.8.0` -> `7.10.0`, and related lockfile updates. The generated spec came out identical. Filament's resource `HasAuthorization` concern did not change in this release, so the `can*()` note below still holds
+- Left for dedicated work: Vite+ `1.8` (with Vitest `5.1.1`), i18next `27` with react-i18next `18`, `@testing-library/jest-dom` `8`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `unpdf` `2`, `glob` `14`, `dotenv` `18`, and `laravel-notification-channels/telegram` `8`
+
 ### Routine Composer and frontend refresh (November 2026, late)
 
 In-range refresh only:

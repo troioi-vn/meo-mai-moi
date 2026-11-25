@@ -6,7 +6,7 @@ interface TelegramMiniAppAuthOptions {
   autoAuthenticate?: boolean
 }
 
-interface TelegramMiniAppManualOptions {
+export interface TelegramMiniAppManualOptions {
   invitationCode?: string | null
 }
 

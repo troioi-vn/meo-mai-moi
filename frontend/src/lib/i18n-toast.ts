@@ -2,6 +2,17 @@ import { toast as sonnerToast } from 'sonner'
 import i18n from '@/i18n'
 
 type ToastOptions = Parameters<typeof sonnerToast>[1]
+type ToastFn = (key: string, options?: ToastOptions) => string | number
+
+// Spelled out because the inferred type of `raw` uses interfaces sonner does not export.
+interface I18nToast {
+  success: ToastFn
+  error: ToastFn
+  warning: ToastFn
+  info: ToastFn
+  message: ToastFn
+  raw: typeof sonnerToast
+}
 
 /**
  * i18n-aware toast wrapper.
@@ -12,7 +23,7 @@ type ToastOptions = Parameters<typeof sonnerToast>[1]
  *   toast.error('auth:login.error')
  *   toast.success('pets:messages.created', { description: 'Additional info' })
  */
-export const toast = {
+export const toast: I18nToast = {
   success: (key: string, options?: ToastOptions) => {
     const message = i18n.t(key)
     return sonnerToast.success(message, options)

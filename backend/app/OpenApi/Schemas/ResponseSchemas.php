@@ -309,6 +309,20 @@ use OpenApi\Attributes as OA;
     ]
 )]
 #[OA\Schema(
+    schema: 'HealthResponse',
+    title: 'Health Response',
+    properties: [
+        new OA\Property(
+            property: 'data',
+            type: 'object',
+            properties: [
+                new OA\Property(property: 'status', type: 'string', enum: ['ok', 'degraded'], example: 'ok'),
+                new OA\Property(property: 'problems', type: 'array', items: new OA\Items(type: 'string', enum: ['database', 'queue']), example: []),
+            ]
+        ),
+    ]
+)]
+#[OA\Schema(
     schema: 'VersionResponse',
     title: 'Version Response',
     properties: [

@@ -325,6 +325,24 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Vite+ 1.8 (November 2026)
+
+`vite-plus` `1.5.0` -> `1.8.0` at the root and in `frontend/`, with Vitest and `@vitest/coverage-v8` `5.1.0` -> `5.1.1`, the version 1.8.0 bundles. A minor, so no `vp migrate`: the pins were moved by hand and both lockfiles refreshed. It brings `oxlint` `1.94.0`, `oxfmt` `0.79.0` and a `tsrs` `7.1` beta.
+
+Local lessons:
+
+- Since Vite+ 1.7, `@voidzero-dev/vite-plus-core` follows Vite's version plus a build suffix (`8.3.8000`, `8.3.8001`) instead of the `vite-plus` version. Take the `vite` alias target from `npm view vite-plus@<version> dependencies.vite`, not from the `vite-plus` number. `vp outdated` then lists the core package as `Latest 8.3.x`, which is that alias and not a major.
+- The 1.8 type check reports declaration errors that `composite: true` in `tsconfig.app.json` always implied, and 1.5 stayed silent on: TS4058 and TS4023, exported values whose inferred type names something that cannot be imported. Plain `tsc -p tsconfig.app.json` already failed on both. The fix was exporting `TelegramMiniAppManualOptions` and giving the i18n `toast` wrapper an explicit type, because sonner does not export the interfaces in `toast.promise`'s return type.
+- `vp check` at the repository root reports formatting in 69 files before and after this upgrade. CI runs it from `frontend/` only.
+
+### Routine Composer and frontend refresh (November 2026, end of month)
+
+In-range refresh only:
+
+- Frontend: TanStack Query `5.108.4`, Lucide `1.80`, Recharts `3.11.1`, React Router `7.18.7`, Orval `8.49`, `typescript-eslint` `8.74`, `rollup-plugin-visualizer` `7.3`, and related patch/minor updates
+- Backend: Laravel `13.43.0` -> `13.44.1`, Filament `5.11.4` -> `5.12.0`, Fortify `1.44`, ParaTest `7.30`, Symfony `8.1.12`, swagger-php `7.8.0` -> `7.10.0`, and related lockfile updates. The generated spec came out identical. Filament's resource `HasAuthorization` concern did not change in this release, so the `can*()` note below still holds
+- Left for dedicated work: Vite+ `1.8` (with Vitest `5.1.1`), i18next `27` with react-i18next `18`, `@testing-library/jest-dom` `8`, TypeScript `7`, MSW `3`, jsdom `31`, `vite-plugin-pwa` `2`, `unpdf` `2`, `glob` `14`, `dotenv` `18`, and `laravel-notification-channels/telegram` `8`
+
 ### Routine Composer and frontend refresh (November 2026, late)
 
 In-range refresh only:
@@ -504,8 +522,8 @@ Main breakage areas:
 | Filament                   | ^5.2    |
 | PHPUnit                    | ^13.1   |
 | React                      | ^19.2   |
-| Vite+ (frontend toolchain) | 1.5.0   |
-| Vite+ (root helper pin)    | 1.5.0   |
+| Vite+ (frontend toolchain) | 1.8.0   |
+| Vite+ (root helper pin)    | 1.8.0   |
 | TypeScript                 | ~6.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

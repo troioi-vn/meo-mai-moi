@@ -31,7 +31,14 @@ class HealthCheckService
             return ['database'];
         }
 
-        $waited = $this->queue->oldestWaitingJobAgeSeconds();
+        // The queue can live on its own connection, so it can fail on its own.
+        // An unreadable queue is reported the same way as a stalled one: either
+        // way jobs are not going out.
+        try {
+            $waited = $this->queue->oldestWaitingJobAgeSeconds();
+        } catch (Throwable) {
+            return ['queue'];
+        }
         if ($waited !== null && $waited > self::QUEUE_STALL_SECONDS) {
             return ['queue'];
         }

@@ -12,27 +12,15 @@ use OpenApi\Attributes as OA;
 #[OA\Get(
     path: '/api/health',
     summary: 'Report whether the database answers and the queue is moving',
-    description: 'Always 200. `status` is `degraded` when `problems` is not empty: `database` when PostgreSQL does not answer, `queue` when a due job has waited more than 15 minutes for a worker.',
+    description: 'Answers 200 whenever the rate limiter admits the request (60 a minute per address; 429 beyond that), including during a database outage. `status` is `degraded` when `problems` is not empty: `database` when PostgreSQL does not answer, `queue` when a due job has waited more than 15 minutes for a worker or the queue cannot be read.',
     tags: ['System'],
     responses: [
         new OA\Response(
             response: 200,
             description: 'Health status',
-            content: new OA\JsonContent(
-                properties: [
-                    new OA\Property(property: 'success', type: 'boolean'),
-                    new OA\Property(property: 'message', type: 'string'),
-                    new OA\Property(
-                        property: 'data',
-                        properties: [
-                            new OA\Property(property: 'status', type: 'string', enum: ['ok', 'degraded']),
-                            new OA\Property(property: 'problems', type: 'array', items: new OA\Items(type: 'string', enum: ['database', 'queue'])),
-                        ],
-                        type: 'object'
-                    ),
-                ]
-            )
+            content: new OA\JsonContent(ref: '#/components/schemas/HealthResponse')
         ),
+        new OA\Response(response: 429, description: 'Too many requests'),
     ]
 )]
 class ShowHealthController extends Controller

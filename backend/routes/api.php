@@ -222,6 +222,7 @@ use App\Http\Controllers\WeightHistory\ListWeightHistoryController;
 use App\Http\Controllers\WeightHistory\ShowWeightController;
 use App\Http\Controllers\WeightHistory\StoreWeightController;
 use App\Http\Controllers\WeightHistory\UpdateWeightController;
+use App\Http\Middleware\ThrottleHealthCheck;
 use Illuminate\Http\Request;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
@@ -236,7 +237,8 @@ $minuteThrottle = static fn (int $productionLimit): string => sprintf(
 );
 
 Route::get('/version', [VersionController::class, 'show']);
-Route::get('/health', ShowHealthController::class)->middleware('throttle:public-api');
+// Throttled on the file store: the default limiter needs the database this checks.
+Route::get('/health', ShowHealthController::class)->middleware(ThrottleHealthCheck::class.':60,1');
 
 // Locale routes
 Route::get('/locale', [LocaleController::class, 'show']);

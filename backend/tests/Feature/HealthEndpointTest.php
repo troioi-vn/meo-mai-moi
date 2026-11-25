@@ -6,7 +6,11 @@ namespace Tests\Feature;
 
 use App\Services\HealthCheckService;
 use App\Services\QueueOperationsService;
+use Illuminate\Cache\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Tests\TestCase;
@@ -77,6 +81,43 @@ class HealthEndpointTest extends TestCase
         }
 
         $this->assertSame(['database'], $problems);
+    }
+
+    public function test_database_outage_answers_200_degraded_over_http_with_a_database_cache(): void
+    {
+        $default = DB::getDefaultConnection();
+        config(['database.connections.health_unreachable' => array_merge(
+            config("database.connections.{$default}"),
+            ['host' => '127.0.0.1', 'port' => 1],
+        )]);
+        // Production's default cache store is the database. Mirror it, so a
+        // limiter or middleware that reaches the cache fails this test. The
+        // shared limiter was built on the testing array store at boot, so it
+        // is rebuilt here; public-api is the limiter the route used before.
+        config(['cache.default' => 'database', 'cache.stores.database.connection' => 'health_unreachable']);
+        $limiter = new RateLimiter(Cache::store('database'));
+        $limiter->for('public-api', fn (Request $request) => Limit::perMinute(150)->by($request->ip()));
+        $this->app->instance(RateLimiter::class, $limiter);
+
+        DB::setDefaultConnection('health_unreachable');
+        try {
+            $response = $this->getJson('/api/health');
+        } finally {
+            DB::setDefaultConnection($default);
+            DB::purge('health_unreachable');
+        }
+
+        $response->assertOk()
+            ->assertJsonPath('data.status', 'degraded')
+            ->assertJsonPath('data.problems', ['database']);
+    }
+
+    public function test_an_unreadable_queue_is_reported_as_a_queue_problem(): void
+    {
+        $queue = Mockery::mock(QueueOperationsService::class);
+        $queue->shouldReceive('oldestWaitingJobAgeSeconds')->once()->andThrow(new \RuntimeException('relation "jobs" does not exist'));
+
+        $this->assertSame(['queue'], (new HealthCheckService($queue))->problems());
     }
 
     private function insertJob(int $availableAt, ?int $reservedAt = null): void

@@ -14,14 +14,14 @@ SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
-NGINX_TEMPLATE="$PROJECT_ROOT/deploy/nginx/e2e.int.catarchy.space.conf.template"
-NGINX_TARGET="/etc/nginx/conf.d/e2e.int.catarchy.space.conf"
+NGINX_TEMPLATE="$PROJECT_ROOT/deploy/nginx/e2e.int.troioi.top.conf.template"
+NGINX_TARGET="/etc/nginx/conf.d/e2e.int.troioi.top.conf"
 MAINTENANCE_SOURCE="$PROJECT_ROOT/deploy/nginx/dev-maintenance.html"
 MAINTENANCE_DIR="${E2E_MAINTENANCE_DIR:-/var/www/dev-maintenance}"
 
 REPORT_ROOT="${E2E_REPORT_ROOT:-/opt/e2e-reports/meo-mai-moi}"
-INTERNAL_CERT="${INTERNAL_CERT:-/etc/ssl/internal/int.catarchy.space/fullchain.pem}"
-INTERNAL_KEY="${INTERNAL_KEY:-/etc/ssl/internal/int.catarchy.space/privkey.pem}"
+INTERNAL_CERT="${INTERNAL_CERT:-/etc/ssl/internal/int.troioi.top/fullchain.pem}"
+INTERNAL_KEY="${INTERNAL_KEY:-/etc/ssl/internal/int.troioi.top/privkey.pem}"
 
 use_sudo() {
     if command -v sudo >/dev/null 2>&1; then

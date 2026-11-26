@@ -10,14 +10,14 @@ server {
     listen [::]:443 ssl;
     http2 on;
 
-    server_name e2e.int.catarchy.space;
+    server_name e2e.int.troioi.top;
 
     ssl_certificate     __INTERNAL_CERT__;
     ssl_certificate_key __INTERNAL_KEY__;
     ssl_protocols TLSv1.2 TLSv1.3;
 
-    access_log /var/log/nginx/e2e.int.catarchy.space_access.log;
-    error_log  /var/log/nginx/e2e.int.catarchy.space_error.log error;
+    access_log /var/log/nginx/e2e.int.troioi.top_access.log;
+    error_log  /var/log/nginx/e2e.int.troioi.top_error.log error;
 
     root __REPORT_ROOT__;
 
@@ -48,6 +48,6 @@ server {
 server {
     listen 80;
     listen [::]:80;
-    server_name e2e.int.catarchy.space;
+    server_name e2e.int.troioi.top;
     return 301 https://$host$request_uri;
 }

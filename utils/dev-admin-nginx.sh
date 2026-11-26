@@ -5,8 +5,8 @@ SCRIPT_PATH="${BASH_SOURCE[0]:-$0}"
 SCRIPT_DIR="$(cd "$(dirname "$SCRIPT_PATH")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 ROOT_ENV_FILE="$PROJECT_ROOT/.env"
-NGINX_TEMPLATE="$PROJECT_ROOT/deploy/nginx/dev-admin.int.catarchy.space.conf.template"
-NGINX_TARGET="/etc/nginx/conf.d/dev-admin.int.catarchy.space.conf"
+NGINX_TEMPLATE="$PROJECT_ROOT/deploy/nginx/dev-admin.int.troioi.top.conf.template"
+NGINX_TARGET="/etc/nginx/conf.d/dev-admin.int.troioi.top.conf"
 
 read_env_value() {
     local file="$1"

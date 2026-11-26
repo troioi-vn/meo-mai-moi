@@ -29,8 +29,8 @@ return [
         'http://127.0.0.1',
         'https://meo-mai-moi.com',
         'https://dev.meo-mai-moi.com',
-        'https://dev-admin.int.catarchy.space',
-        'https://meo-admin.int.catarchy.space',
+        'https://dev-admin.int.troioi.top',
+        'https://meo-admin.int.troioi.top',
     ],
 
     'allowed_origins_patterns' => [],

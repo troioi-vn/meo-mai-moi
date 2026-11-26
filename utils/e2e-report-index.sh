@@ -18,7 +18,7 @@ SUITE_STATUS="${2:-0}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 KNOWN_ISSUES="$PROJECT_ROOT/frontend/e2e/known-issues.json"
-REPORT_BASE_URL="${E2E_REPORT_BASE_URL:-https://e2e.int.catarchy.space}"
+REPORT_BASE_URL="${E2E_REPORT_BASE_URL:-https://e2e.int.troioi.top}"
 REPORT_ROOT="${E2E_REPORT_ROOT:-/opt/e2e-reports/meo-mai-moi}"
 KEEP_RUNS="${E2E_KEEP_RUNS:-30}"
 

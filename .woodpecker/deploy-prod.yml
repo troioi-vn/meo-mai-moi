@@ -87,9 +87,9 @@ steps:
       - test -f utils/ci-detached.sh
       - test -f utils/dev-slot.sh
       - test -f utils/dev-admin-nginx.sh
-      - test -f deploy/nginx/dev-admin.int.catarchy.space.conf.template
+      - test -f deploy/nginx/dev-admin.int.troioi.top.conf.template
       - test -f utils/meo-admin-nginx.sh
-      - test -f deploy/nginx/meo-admin.int.catarchy.space.conf.template
+      - test -f deploy/nginx/meo-admin.int.troioi.top.conf.template
       - test -f utils/prod-slot.sh
       - test -f utils/woodpecker-notify-ab-switch.sh
       - test -f utils/e2e-run.sh
@@ -103,7 +103,7 @@ steps:
       - grep -q 'backend_e2e' docker-compose.yml
       - test -f frontend/e2e/known-issues.json
       - test -f frontend/e2e/deployment.spec.ts
-      - test -f deploy/nginx/e2e.int.catarchy.space.conf.template
+      - test -f deploy/nginx/e2e.int.troioi.top.conf.template
       - test -f deploy/nginx/dev-maintenance.html
       - test -f backend/Dockerfile
       - grep -q 'BACKEND_IMAGE' docker-compose.yml

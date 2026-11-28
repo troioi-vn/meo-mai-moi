@@ -106,7 +106,7 @@ steps:
   frontend:
     # A real Node, not oven/bun: bun's image only has a node wrapper, and vp
     # runs Vitest on Node.
-    image: node:24
+    image: node:26
     depends_on:
       - deps
     commands:
@@ -124,7 +124,7 @@ steps:
   # welcome view in place of the template copy deps made. It waits for backend
   # because the suite reads both while it runs.
   build:
-    image: node:24
+    image: node:26
     depends_on:
       - backend
       - frontend

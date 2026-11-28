@@ -70,7 +70,7 @@ class TelegramNotificationChannel implements NotificationChannelInterface
                 'disable_web_page_preview' => true,
             ]);
 
-            if ($response !== null && ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300)) {
+            if ($response->getStatusCode() < 200 || $response->getStatusCode() >= 300) {
                 Log::error('Failed to send Telegram notification: unexpected response status', [
                     'user_id' => $user->id,
                     'type' => $type,
@@ -80,7 +80,7 @@ class TelegramNotificationChannel implements NotificationChannelInterface
                 return false;
             }
 
-            $this->logSuccess($user, $type, $response?->getStatusCode());
+            $this->logSuccess($user, $type, $response->getStatusCode());
 
             return true;
         } catch (\Throwable $e) {
@@ -130,7 +130,7 @@ class TelegramNotificationChannel implements NotificationChannelInterface
         return is_string($token) && $token !== '' ? $token : null;
     }
 
-    private function logSuccess(User $user, string $type, ?int $statusCode): void
+    private function logSuccess(User $user, string $type, int $statusCode): void
     {
         Log::info('Telegram notification sent', [
             'user_id' => $user->id,

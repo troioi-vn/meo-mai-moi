@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\NotificationType;
 use App\Models\NotificationPreference;
 use App\Models\User;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use NotificationChannels\Telegram\Telegram;
@@ -28,7 +29,7 @@ class TelegramWebhookControllerTest extends TestCase
         Http::fake();
         $this->mock(Telegram::class, function ($mock): void {
             $mock->shouldReceive('setToken')->andReturnSelf();
-            $mock->shouldReceive('sendMessage')->andReturnNull();
+            $mock->shouldReceive('sendMessage')->andReturn(new Response(200));
         });
     }
 

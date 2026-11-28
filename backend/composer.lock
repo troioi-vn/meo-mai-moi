@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b761b08389af801d2b4f27d0c657617b",
+    "content-hash": "3b298cb612f4f99322e651c899c43ef3",
     "packages": [
         {
             "name": "altcha-org/altcha",
@@ -1475,32 +1475,32 @@
         },
         {
             "name": "darkaonline/l5-swagger",
-            "version": "11.4.1",
+            "version": "12.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DarkaOnLine/L5-Swagger.git",
-                "reference": "b07b8921062260dee710de88ee1c0aff6ceac1ae"
+                "reference": "6dd8ee90f08118e8ede4d9019d86a3c71ef36ecd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/b07b8921062260dee710de88ee1c0aff6ceac1ae",
-                "reference": "b07b8921062260dee710de88ee1c0aff6ceac1ae",
+                "url": "https://api.github.com/repos/DarkaOnLine/L5-Swagger/zipball/6dd8ee90f08118e8ede4d9019d86a3c71ef36ecd",
+                "reference": "6dd8ee90f08118e8ede4d9019d86a3c71ef36ecd",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "laravel/framework": "^13.0 || ^12.1 || ^11.44",
-                "php": "^8.2",
-                "swagger-api/swagger-ui": ">=5.18.3",
-                "symfony/yaml": "^5.0 || ^6.0 || ^7.0 || ^8.0",
-                "zircote/swagger-php": "^6.12 || ^7.0"
+                "laravel/framework": "^13.0 || ^12.1",
+                "php": "^8.3",
+                "swagger-api/swagger-ui": "^5.29",
+                "symfony/yaml": "^7.2 || ^8.0",
+                "zircote/swagger-php": "^7.3"
             },
             "require-dev": {
                 "mockery/mockery": "1.*",
-                "orchestra/testbench": "^11.0 || ^10.0 || ^9.0 || ^8.0 || 7.* || ^6.15 || 5.*",
+                "orchestra/testbench": "^11.0 || ^10.0",
                 "php-coveralls/php-coveralls": "^2.0",
                 "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0 || ^12.0 || ^13.4"
+                "phpunit/phpunit": "^11.5 || ^12.5 || ^13.4"
             },
             "type": "library",
             "extra": {
@@ -1543,7 +1543,7 @@
             ],
             "support": {
                 "issues": "https://github.com/DarkaOnLine/L5-Swagger/issues",
-                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/11.4.1"
+                "source": "https://github.com/DarkaOnLine/L5-Swagger/tree/12.0.0"
             },
             "funding": [
                 {
@@ -1551,7 +1551,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-11-19T07:05:47+00:00"
+            "time": "2026-11-27T07:56:01+00:00"
         },
         {
             "name": "dasprid/enum",
@@ -3795,21 +3795,21 @@
         },
         {
             "name": "laravel-notification-channels/telegram",
-            "version": "7.0.0",
+            "version": "8.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel-notification-channels/telegram.git",
-                "reference": "948b3a73a893950f271f5b0fc2df45883d176fc8"
+                "reference": "eea15cb6275aeb03bcba3481a3dde05bfb105800"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel-notification-channels/telegram/zipball/948b3a73a893950f271f5b0fc2df45883d176fc8",
-                "reference": "948b3a73a893950f271f5b0fc2df45883d176fc8",
+                "url": "https://api.github.com/repos/laravel-notification-channels/telegram/zipball/eea15cb6275aeb03bcba3481a3dde05bfb105800",
+                "reference": "eea15cb6275aeb03bcba3481a3dde05bfb105800",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "guzzlehttp/guzzle": "^7.8",
+                "guzzlehttp/guzzle": "^7.8 || ^8.0",
                 "illuminate/contracts": "^12.0 || ^13.0",
                 "illuminate/notifications": "^12.0 || ^13.0",
                 "illuminate/support": "^12.0 || ^13.0",
@@ -3817,10 +3817,11 @@
             },
             "require-dev": {
                 "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.18",
                 "mockery/mockery": "^1.4.4",
                 "orchestra/testbench": "^10.0 || ^11.0",
-                "pestphp/pest": "^4.0",
-                "pestphp/pest-plugin-laravel": "^4.0",
+                "pestphp/pest": "^4.0 || ^5.0",
+                "pestphp/pest-plugin-laravel": "^4.0 || ^5.0",
                 "phpstan/extension-installer": "^1.2",
                 "phpstan/phpstan-deprecation-rules": "^2.0",
                 "phpstan/phpstan-phpunit": "^2.0"
@@ -3861,9 +3862,15 @@
             ],
             "support": {
                 "issues": "https://github.com/laravel-notification-channels/telegram/issues",
-                "source": "https://github.com/laravel-notification-channels/telegram/tree/7.0.0"
+                "source": "https://github.com/laravel-notification-channels/telegram/tree/8.0.0"
             },
-            "time": "2026-03-19T18:58:46+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/irazasyed",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-08-24T21:54:47+00:00"
         },
         {
             "name": "laravel/fortify",

@@ -92,7 +92,7 @@ describe('MainPage Integration Tests', () => {
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
 
       // Verify pet cards are rendered (should be 4 pets)
-      const petCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      const petCards = await screen.findAllByText(/Fluffy|Whiskers|Luna|Mittens/)
       expect(petCards).toHaveLength(4)
 
       // Verify no "Show more" button for 4 pets
@@ -204,7 +204,9 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Verify API was called
-      expect(apiCalled).toBe(true)
+      await waitFor(() => {
+        expect(apiCalled).toBe(true)
+      })
     })
 
     it('processes API response correctly and limits to 4 cats', async () => {

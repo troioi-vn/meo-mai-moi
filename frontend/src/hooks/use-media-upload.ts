@@ -103,7 +103,7 @@ export function useMediaUpload({
 
   const showValidationError = useCallback(
     (result: Extract<ValidationResult, { ok: false }>) => {
-      const message = t(result.errorKey, result.params)
+      const message = t(result.errorKey, result.params ?? {})
       setError(message)
       toast.raw.error(message)
     },

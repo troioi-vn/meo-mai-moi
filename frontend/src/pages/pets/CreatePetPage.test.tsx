@@ -348,7 +348,9 @@ describe('CreatePetPage', () => {
     // Fill out the form
     fireEvent.change(getNameInput(), { target: { value: 'Fluffy' } })
     // Default precision is 'day', so birthday input is already shown
-    await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
+    })
     fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-01-01' } })
     // Country defaults to VN
     // Select city (using our mock)
@@ -447,7 +449,9 @@ describe('CreatePetPage', () => {
     fireEvent.change(getNameInput(), { target: { value: 'Error Pet' } })
     fireEvent.click(screen.getByText('Select Hanoi'))
     // Provide birthday for day precision
-    await waitFor(() => expect(screen.getByLabelText('Birthday')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByLabelText('Birthday')).toBeInTheDocument()
+    })
     fireEvent.change(screen.getByLabelText('Birthday'), { target: { value: '2020-06-15' } })
     // Country defaults to VN, Description not available in create mode
 
@@ -480,7 +484,9 @@ describe('CreatePetPage', () => {
     mockPostPets.mockResolvedValue({ id: 99, name: 'Ghost' })
 
     renderWithRouter(<CreatePetPage />)
-    await waitFor(() => expect(getSubmitButton()).toBeInTheDocument())
+    await waitFor(() => {
+      expect(getSubmitButton()).toBeInTheDocument()
+    })
 
     await user.clear(getNameInput())
     await user.type(getNameInput(), 'Ghost')

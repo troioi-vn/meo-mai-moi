@@ -155,7 +155,9 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('litter-name')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-name')).toBeInTheDocument()
+    })
     expect(screen.getByTestId('litter-name')).toHaveTextContent('Sunny Litter')
     // members
     expect(screen.getByTestId('litter-member-101')).toBeInTheDocument()
@@ -181,7 +183,9 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('litter-member-101')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-member-101')).toBeInTheDocument()
+    })
 
     await user.click(screen.getByTestId('actions-btn-101'))
     await user.click(await screen.findByTestId('rename-btn-101'))
@@ -198,7 +202,9 @@ describe('LitterDetailPage', () => {
     expect(putCalls[0]!.body).toMatchObject({ name: 'Simba' })
 
     // After invalidate, new name should appear
-    await waitFor(() => expect(screen.getByTestId('member-link-101')).toHaveTextContent('Simba'))
+    await waitFor(() => {
+      expect(screen.getByTestId('member-link-101')).toHaveTextContent('Simba')
+    })
   })
 
   it('litter can be renamed inline and new name is visible without reload', async () => {
@@ -210,7 +216,9 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('litter-name')).toHaveTextContent('Sunny Litter'))
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-name')).toHaveTextContent('Sunny Litter')
+    })
     await user.click(screen.getByTestId('litter-rename-btn'))
 
     const input = screen.getByTestId('litter-rename-input')
@@ -226,7 +234,9 @@ describe('LitterDetailPage', () => {
       id: 10,
       body: { name: 'Moonbeams', base_version: '2024-01-01T00:00:00Z' },
     })
-    await waitFor(() => expect(screen.getByTestId('litter-name')).toHaveTextContent('Moonbeams'))
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-name')).toHaveTextContent('Moonbeams')
+    })
   })
 
   it('member can be separated and list updates', async () => {
@@ -243,13 +253,17 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('litter-member-101')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-member-101')).toBeInTheDocument()
+    })
     expect(screen.getByTestId('litter-member-count')).toHaveTextContent('3')
 
     await user.click(screen.getByTestId('actions-btn-101'))
     await user.click(await screen.findByTestId('separate-btn-101'))
 
-    await waitFor(() => expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument()
+    })
     expect(screen.getByTestId('litter-member-count')).toHaveTextContent('2')
     expect(screen.getByTestId('litter-member-102')).toBeInTheDocument()
   })
@@ -271,7 +285,9 @@ describe('LitterDetailPage', () => {
     await waitFor(() => {
       expect(deleteCalls).toEqual([101])
     })
-    await waitFor(() => expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument()
+    })
   })
 
   it('can mark a removed pet as lost', async () => {
@@ -293,7 +309,9 @@ describe('LitterDetailPage', () => {
       expect(statusCalls).toHaveLength(1)
       expect(statusCalls[0]).toMatchObject({ id: 101, body: { status: 'lost' } })
     })
-    await waitFor(() => expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.queryByTestId('litter-member-101')).not.toBeInTheDocument()
+    })
   })
 
   it('splitting up requires confirmation that states no pets are deleted', async () => {
@@ -306,7 +324,9 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('split-up-btn')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('split-up-btn')).toBeInTheDocument()
+    })
 
     await user.click(screen.getByTestId('split-up-btn'))
 
@@ -319,7 +339,9 @@ describe('LitterDetailPage', () => {
     expect(screen.getByTestId('split-up-cancel')).toBeInTheDocument()
     // Cancel should close without splitting
     await user.click(screen.getByTestId('split-up-cancel'))
-    await waitFor(() => expect(screen.queryByTestId('split-up-dialog')).not.toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.queryByTestId('split-up-dialog')).not.toBeInTheDocument()
+    })
     // litter still there
     expect(screen.getByTestId('litter-name')).toBeInTheDocument()
   })
@@ -337,12 +359,16 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('split-up-btn')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('split-up-btn')).toBeInTheDocument()
+    })
     await user.click(screen.getByTestId('split-up-btn'))
     await screen.findByTestId('split-up-dialog')
     await user.click(screen.getByTestId('split-up-confirm'))
 
-    await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('home-page')).toBeInTheDocument()
+    })
     expect(screen.queryByTestId('litter-name')).not.toBeInTheDocument()
   })
 
@@ -359,12 +385,16 @@ describe('LitterDetailPage', () => {
       initialAuthState: { isAuthenticated: true, user: mockUser },
     })
 
-    await waitFor(() => expect(screen.getByTestId('actions-btn-101')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('actions-btn-101')).toBeInTheDocument()
+    })
     await user.click(screen.getByTestId('actions-btn-101'))
     await user.click(await screen.findByTestId('separate-btn-101'))
     await user.click(await screen.findByTestId('separate-confirm'))
 
-    await waitFor(() => expect(screen.getByTestId('home-page')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('home-page')).toBeInTheDocument()
+    })
     expect(screen.queryByTestId('litter-name')).not.toBeInTheDocument()
   })
 
@@ -387,8 +417,13 @@ describe('LitterDetailPage', () => {
 
     // Initially loading
     expect(await screen.findByTestId('loading-spinner')).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText(/Litter not found/i)).toBeInTheDocument(), {
-      timeout: 2000,
-    })
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Litter not found/i)).toBeInTheDocument()
+      },
+      {
+        timeout: 2000,
+      }
+    )
   })
 })

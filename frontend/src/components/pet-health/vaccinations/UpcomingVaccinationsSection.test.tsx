@@ -118,7 +118,9 @@ describe('UpcomingVaccinationsSection', () => {
     await user.click(await screen.findByRole('switch'))
     await user.keyboard('{Escape}')
     await user.click(await screen.findByRole('button', { name: 'Make active again' }))
-    await waitFor(() => expect(screen.queryByText('Renewed')).not.toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.queryByText('Renewed')).not.toBeInTheDocument()
+    })
     expect(screen.getByText('Due June 1, 2024')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /^renew$/i })).toBeInTheDocument()
     expect(toastSuccessMock).toHaveBeenCalledWith('pets:vaccinations.reactivateSuccess')

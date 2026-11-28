@@ -339,7 +339,7 @@ const useHelperProfileForm = (
           const files = Array.from(target.files)
           const validation = validateImageFiles(files, MEDIA_LIMITS.helperPhoto)
           if (!validation.ok) {
-            const message = t(validation.errorKey, validation.params)
+            const message = t(validation.errorKey, validation.params ?? {})
             setErrors((prev) => ({ ...prev, photos: message }))
             toast.raw.error(message)
             return

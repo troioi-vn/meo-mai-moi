@@ -234,16 +234,20 @@ Object.defineProperty(navigator, 'share', {
 
 beforeAll(() => {
   server.listen({
-    onUnhandledRequest: (request, print) => {
+    onUnhandledFrame: ({ frame, defaults }) => {
       // Ignore requests to localhost:3000 that happen during cleanup
       // These are stray async requests that complete after tests
-      const url = new URL(request.url)
-      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
-        // Log for debugging but don't error
-        console.warn(`[MSW] Bypassing stray request: ${request.method} ${request.url}`)
-        return
+      if (frame.protocol === 'http') {
+        // MSW types every frame's data as unknown; HTTP frames carry the request
+        const { request } = frame.data as { request: Request }
+        const url = new URL(request.url)
+        if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+          // Log for debugging but don't error
+          console.warn(`[MSW] Bypassing stray request: ${request.method} ${request.url}`)
+          return
+        }
       }
-      print.error()
+      defaults.error()
     },
   })
 })

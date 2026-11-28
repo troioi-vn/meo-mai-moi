@@ -1,4 +1,5 @@
 import { parseISO } from 'date-fns'
+import type { TFunction } from 'i18next'
 import type { PetSex } from '@/api/generated/model/petSex'
 import type { PetBirthdayPrecision } from '@/api/generated/model/petBirthdayPrecision'
 import type { City } from '@/api/generated/model/city'
@@ -261,7 +262,7 @@ export const formatPetAge = (
     Pet,
     'birthday' | 'birthday_precision' | 'birthday_year' | 'birthday_month' | 'birthday_day'
   >,
-  t: (key: string, options?: Record<string, unknown>) => string
+  t: TFunction
 ): string => {
   const precision = pet.birthday_precision ?? (pet.birthday ? 'day' : 'unknown')
   const today = new Date()

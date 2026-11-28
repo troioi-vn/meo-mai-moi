@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { Info, Eye, Mars, Venus, LogOut, Images } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -68,10 +69,7 @@ const getPublicCategory = (category: unknown): { id: React.Key; name: string } |
 }
 
 // Helper function to format pet age from public pet data
-const formatPublicPetAge = (
-  pet: PublicPet,
-  t: (key: string, options?: Record<string, unknown>) => string
-): string => {
+const formatPublicPetAge = (pet: PublicPet, t: TFunction): string => {
   const precision = pet.birthday_precision ?? 'unknown'
   const today = new Date()
 

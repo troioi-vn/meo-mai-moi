@@ -106,6 +106,15 @@ return [
 
         'scanOptions' => [
             /**
+             * swagger-php scan mode. L5-Swagger 12 defaults to `hybrid`, which drops
+             * several shared schemas from this spec and copies file docblocks onto
+             * schemas, so stay on `classic` until the annotations are moved over.
+             *
+             * @link https://zircote.github.io/swagger-php/guide/modes.html
+             */
+            'mode' => 'classic',
+
+            /**
              * Configuration for default processors. Allows to pass processors configuration to swagger-php.
              *
              * @link https://zircote.github.io/swagger-php/reference/processors.html

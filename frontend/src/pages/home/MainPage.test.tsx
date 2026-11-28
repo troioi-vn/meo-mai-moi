@@ -92,7 +92,7 @@ describe('MainPage Integration Tests', () => {
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
 
       // Verify pet cards are rendered (should be 4 pets)
-      const petCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      const petCards = await screen.findAllByText(/Fluffy|Whiskers|Luna|Mittens/)
       expect(petCards).toHaveLength(4)
 
       // Verify no "Show more" button for 4 pets
@@ -113,7 +113,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should only show first 4 pets
-      const catCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      const catCards = await screen.findAllByText(/Fluffy|Whiskers|Luna|Mittens/)
       expect(catCards).toHaveLength(4)
 
       // Should show "Show more" button
@@ -134,7 +134,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should show empty state message
-      expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+      expect(await screen.findByText('No placement requests yet.')).toBeInTheDocument()
 
       // Should show paw emoji
       expect(screen.getByText('🐾')).toBeInTheDocument()
@@ -204,7 +204,9 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Verify API was called
-      expect(apiCalled).toBe(true)
+      await waitFor(() => {
+        expect(apiCalled).toBe(true)
+      })
     })
 
     it('processes API response correctly and limits to 4 cats', async () => {
@@ -221,7 +223,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should only display first 4 cats
-      expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      expect(await screen.findByText('Fluffy')).toBeInTheDocument()
       expect(screen.getByText('Whiskers')).toBeInTheDocument()
       expect(screen.getByText('Luna')).toBeInTheDocument()
       expect(screen.getByText('Mittens')).toBeInTheDocument()

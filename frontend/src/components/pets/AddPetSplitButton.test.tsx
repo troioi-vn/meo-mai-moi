@@ -75,7 +75,9 @@ describe('AddPetSplitButton', () => {
     renderWithRouter(<AddPetSplitButton isOnline={true} />)
 
     await user.click(screen.getByTestId('add-pet-chevron'))
-    await waitFor(() => expect(screen.getByTestId('dropdown-add-litter')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('dropdown-add-litter')).toBeInTheDocument()
+    })
     await user.click(screen.getByTestId('dropdown-add-litter'))
 
     await waitFor(() => {

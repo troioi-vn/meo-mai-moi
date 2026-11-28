@@ -93,14 +93,20 @@ describe('AddLitterDialog', () => {
     const onOpenChange = vi.fn()
     renderWithRouter(<AddLitterDialog open={true} onOpenChange={onOpenChange} />)
 
-    await waitFor(() => expect(screen.getByTestId('litter-pet-type-trigger')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-pet-type-trigger')).toBeInTheDocument()
+    })
     await user.click(screen.getByTestId('litter-pet-type-trigger'))
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Cat' })).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Cat' })).toBeInTheDocument()
+    })
     await user.click(screen.getByRole('option', { name: 'Cat' }))
 
     // Set member count to 3
     await user.click(screen.getByTestId('litter-member-count'))
-    await waitFor(() => expect(screen.getByRole('option', { name: '3' })).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: '3' })).toBeInTheDocument()
+    })
     await user.click(screen.getByRole('option', { name: '3' }))
 
     // Verify 3 rows rendered
@@ -142,9 +148,13 @@ describe('AddLitterDialog', () => {
     const user = userEvent.setup()
     renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
 
-    await waitFor(() => expect(screen.getByTestId('litter-pet-type-trigger')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-pet-type-trigger')).toBeInTheDocument()
+    })
     await user.click(screen.getByTestId('litter-pet-type-trigger'))
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Cat' })).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Cat' })).toBeInTheDocument()
+    })
     await user.click(screen.getByRole('option', { name: 'Cat' }))
 
     // Keep default 4 members, leave names/weights blank (just set sexes)
@@ -174,9 +184,13 @@ describe('AddLitterDialog', () => {
 
     renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
 
-    await waitFor(() => expect(screen.getByTestId('litter-pet-type-trigger')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-pet-type-trigger')).toBeInTheDocument()
+    })
     await user.click(screen.getByTestId('litter-pet-type-trigger'))
-    await waitFor(() => expect(screen.getByRole('option', { name: 'Cat' })).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Cat' })).toBeInTheDocument()
+    })
     await user.click(screen.getByRole('option', { name: 'Cat' }))
 
     await user.click(screen.getByTestId('litter-submit'))
@@ -191,7 +205,9 @@ describe('AddLitterDialog', () => {
     const user = userEvent.setup()
     renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
 
-    await waitFor(() => expect(screen.getByTestId('litter-member-row-0')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-member-row-0')).toBeInTheDocument()
+    })
 
     // Each member row has 3 sex buttons; clicking one should update pressed state immediately
     const maleBtn = screen.getByTestId('member-0-sex-male')
@@ -224,7 +240,9 @@ describe('AddLitterDialog', () => {
     renderWithRouter(<AddLitterDialog open={true} onOpenChange={() => {}} />)
 
     // The default of 4 is below the served minimum, so it clamps up to 6 rows.
-    await waitFor(() => expect(screen.getByTestId('litter-member-row-5')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByTestId('litter-member-row-5')).toBeInTheDocument()
+    })
     expect(screen.queryByTestId('litter-member-row-6')).not.toBeInTheDocument()
     expect(screen.getByText('Between 6 and 8')).toBeInTheDocument()
   })

@@ -84,7 +84,9 @@ describe('FinancePage', () => {
         </>
       ),
     })
-    await waitFor(() => expect(screen.getByText('Catarchy Rescue')).toBeInTheDocument())
+    await waitFor(() => {
+      expect(screen.getByText('Catarchy Rescue')).toBeInTheDocument()
+    })
     expect(screen.getByRole('heading', { name: 'Catarchy Rescue' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Finances' })).not.toBeInTheDocument()
     expect(screen.queryByText('Create another')).not.toBeInTheDocument()

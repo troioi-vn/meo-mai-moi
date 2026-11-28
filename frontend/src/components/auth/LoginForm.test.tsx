@@ -16,7 +16,7 @@ describe('LoginForm', () => {
     server.use(
       http.get('http://localhost:3000/sanctum/csrf-cookie', () => {
         csrfRequestCount += 1
-        return HttpResponse.json({}, { status: 204 })
+        return new HttpResponse(null, { status: 204 })
       }),
       http.post('http://localhost:3000/login', () => {
         return HttpResponse.json({
@@ -363,7 +363,7 @@ describe('LoginForm', () => {
         if (csrfRequestCount === 2) {
           return HttpResponse.json({ message: 'csrf unavailable' }, { status: 503 })
         }
-        return HttpResponse.json({}, { status: 204 })
+        return new HttpResponse(null, { status: 204 })
       }),
       http.get('http://localhost:3000/api/users/me', () => {
         profileRequestCount += 1

@@ -325,6 +325,16 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### TypeScript 7 (November 2026)
+
+`typescript` `6.0.3` -> `7.0.2`, the Go-based compiler. No source changes: `vp check`, `tsc -p tsconfig.typecheck.json`, `vp test`, `vp build`, `i18n:ci` and `ts-prune` all pass unchanged, and the generated API client is identical.
+
+Local lessons:
+
+- TypeScript 7's package no longer exports the classic compiler API: `require('typescript')` returns only `version` and `versionMajorMinor`. Tools that parse with it keep working only if they bring their own copy. `@lingual/i18n-check` installs TypeScript `5.9` and `@formatjs/*` install `6.0` as nested dependencies, so `i18n:*` is unaffected.
+- dependency-cruiser supports TypeScript `<7.0.0 || >=7.1.0`. On 7.0, `lint:deps` reports "no dependency violations found" after cruising 0 modules and exits 0. `.dependency-cruiser.cjs` now sets `parser: 'swc'` with `@swc/core` as a dev dependency. It cruises the same 1180 modules and reports the same 51 warnings, and it counts more dependencies (3549 instead of 2947), most likely because swc keeps `import type` edges. Check that the module count is non-zero after any parser or TypeScript change.
+- `typescript-eslint` still declares TypeScript `<6.1.0`, which only adds a peer warning: linting runs through oxlint, and the repository has no ESLint config.
+
 ### Routine refresh and deferred majors (November 2026, last pass)
 
 In-range refresh first, then every deferred major that had no blocker:
@@ -542,6 +552,6 @@ Main breakage areas:
 | React                      | ^19.2   |
 | Vite+ (frontend toolchain) | 1.8.0   |
 | Vite+ (root helper pin)    | 1.8.0   |
-| TypeScript                 | ~6.0    |
+| TypeScript                 | ~7.0    |
 | dependency-cruiser         | ^18.0   |
 | @types/node                | ^26.1   |

@@ -7,7 +7,7 @@ const server = setupServer(...petHandlers)
 
 describe('MSW Pet Handlers Integration', () => {
   beforeAll(() => {
-    server.listen({ onUnhandledRequest: 'error' })
+    server.listen({ onUnhandledFrame: 'error' })
   })
 
   afterEach(() => {

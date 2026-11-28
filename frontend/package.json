@@ -133,7 +133,7 @@
     "globals": "^17.14.0",
     "i18next-scanner": "^4.6.0",
     "jsdom": "^31.0.1",
-    "msw": "^2.15.0",
+    "msw": "^3.0.8",
     "orval": "^8.49.0",
     "postcss": "^8.5.34",
     "rollup-plugin-visualizer": "^7.3.0",

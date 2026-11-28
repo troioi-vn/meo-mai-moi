@@ -113,7 +113,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should only show first 4 pets
-      const catCards = screen.getAllByText(/Fluffy|Whiskers|Luna|Mittens/)
+      const catCards = await screen.findAllByText(/Fluffy|Whiskers|Luna|Mittens/)
       expect(catCards).toHaveLength(4)
 
       // Should show "Show more" button
@@ -134,7 +134,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should show empty state message
-      expect(screen.getByText('No placement requests yet.')).toBeInTheDocument()
+      expect(await screen.findByText('No placement requests yet.')).toBeInTheDocument()
 
       // Should show paw emoji
       expect(screen.getByText('🐾')).toBeInTheDocument()
@@ -221,7 +221,7 @@ describe('MainPage Integration Tests', () => {
       })
 
       // Should only display first 4 cats
-      expect(screen.getByText('Fluffy')).toBeInTheDocument()
+      expect(await screen.findByText('Fluffy')).toBeInTheDocument()
       expect(screen.getByText('Whiskers')).toBeInTheDocument()
       expect(screen.getByText('Luna')).toBeInTheDocument()
       expect(screen.getByText('Mittens')).toBeInTheDocument()

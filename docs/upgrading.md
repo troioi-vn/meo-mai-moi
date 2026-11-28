@@ -325,6 +325,14 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Node 26 in CI (November 2026)
+
+The `frontend` and `build` steps in `.woodpecker/test.yml` move from `node:24` to `node:26`, the current LTS line and the version local development and the Playwright image already run. Replayed in `node:26`, the steps pass unchanged: install, `api:generate`, `i18n:ci`, `icons:test`, `vp check`, all 1431 tests, and `build:docker`.
+
+Local lessons:
+
+- A Node gap between CI and local hides failures. MSW 3 on Node 24 turned a stubbed `204` with a JSON body into a network error that Node 26 let through, so seven tests failed only in CI. Keep the CI image on the Node line developers run.
+- `bun run build:docker` rewrites the tracked `backend/public/offline.html`. Restore it after a local replay of the CI build step.
 ### TypeScript 7 (November 2026)
 
 `typescript` `6.0.3` -> `7.0.2`, the Go-based compiler. No source changes: `vp check`, `tsc -p tsconfig.typecheck.json`, `vp test`, `vp build`, `i18n:ci` and `ts-prune` all pass unchanged, and the generated API client is identical.

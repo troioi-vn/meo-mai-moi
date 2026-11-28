@@ -22,6 +22,8 @@ module.exports = {
     doNotFollow: { path: 'node_modules' },
     includeOnly: '^src',
     tsConfig: { fileName: 'tsconfig.json' },
+    // TypeScript 7 dropped the compiler API dependency-cruiser parses with
+    parser: 'swc',
     reporterOptions: { dot: { collapsePattern: 'node_modules/[^/]+' } },
   },
 }

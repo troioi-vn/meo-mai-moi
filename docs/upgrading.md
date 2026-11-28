@@ -325,6 +325,24 @@ If the upgrade taught us project-specific lessons, add them to this document so 
 
 ## Version History
 
+### Routine refresh and deferred majors (November 2026, last pass)
+
+In-range refresh first, then every deferred major that had no blocker:
+
+- In range: Lucide `1.83`, `react-resizable-panels` `4.26`, Recharts `3.11.2`, ESLint `10.16`; Symfony `8.1.13`, swagger-php `7.11.0`, Spatie Permission `8.5.1` and related lockfile updates. The generated spec came out identical
+- Frontend majors: `dotenv` `18`, `glob` `14`, `unpdf` `2` (still pinned exactly), `@testing-library/jest-dom` `8`, jsdom `31`, MSW `3`, `@hookform/resolvers` `7`, i18next `27` with react-i18next `18`, and `vite-plugin-pwa` `2`
+- Backend majors: L5-Swagger `12` and `laravel-notification-channels/telegram` `8`
+- Left: TypeScript `7`, because `typescript-eslint` `8.74` still requires TypeScript `<6.1.0`, and Vitest `5.1.2`, because Vite+ `1.8.0` bundles `5.1.1`. `bun audit` reports two moderate `glob` and `minimatch` advisories, both reached only through `@lingual/i18n-check` and `workbox-build`
+
+Local lessons:
+
+- L5-Swagger 12 scans in `hybrid` mode by default. On this codebase that drops shared schemas such as `ApiMessageResponse` and `Pagination` and copies the `ResponseSchemas.php` file docblock onto every schema in it. `config/l5-swagger.php` sets `scanOptions.mode` to `classic`, which reproduces the previous spec byte for byte. Moving to `hybrid` is separate work.
+- MSW 3 renames `onUnhandledRequest` to `onUnhandledFrame({ frame, defaults })`; an HTTP frame carries the request at `frame.data.request`. It also resolves responses a tick later, which exposed three `MainPage` tests that waited for a heading the loading skeleton already renders.
+- jest-dom 8 types matchers as `void` under Vitest 5, so `waitFor(() => expect(...).toBeInTheDocument())` trips `no-confusing-void-expression`. Use a block body, as the rest of the suite does.
+- i18next 27's `TFunction` is not assignable to `(key: string, options?) => string`. Type helper parameters as `TFunction` from `i18next`, and pass `{}` instead of `undefined` for interpolation options.
+- Telegram channel 8 never returns `null` from `sendMessage()`, and Mockery enforces the return type, so stubs of `NotificationChannels\Telegram\Telegram` must return a PSR-7 response.
+- `vite-plugin-pwa` 2 only widens a peer range: `sw.js` and the web manifests came out byte-identical.
+
 ### Vite+ 1.8 (November 2026)
 
 `vite-plus` `1.5.0` -> `1.8.0` at the root and in `frontend/`, with Vitest and `@vitest/coverage-v8` `5.1.0` -> `5.1.1`, the version 1.8.0 bundles. A minor, so no `vp migrate`: the pins were moved by hand and both lockfiles refreshed. It brings `oxlint` `1.94.0`, `oxfmt` `0.79.0` and a `tsrs` `7.1` beta.

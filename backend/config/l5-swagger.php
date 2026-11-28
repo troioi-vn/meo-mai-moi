@@ -112,7 +112,7 @@ return [
              *
              * @link https://zircote.github.io/swagger-php/guide/modes.html
              */
-            'mode' => env('L5_SWAGGER_SCAN_MODE', 'classic'),
+            'mode' => 'classic',
 
             /**
              * Configuration for default processors. Allows to pass processors configuration to swagger-php.
